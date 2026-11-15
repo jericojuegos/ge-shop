@@ -1,0 +1,1 @@
+"""Seller shops module."""
