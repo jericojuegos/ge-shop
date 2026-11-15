@@ -16,7 +16,10 @@ class Settings(BaseSettings):
     database_url: str = Field(default="sqlite:///./ge_shop.db")
     jwt_secret_key: str = Field(default="dev-only-change-in-production-secret-key-32b")
     jwt_algorithm: str = Field(default="HS256")
+    jwt_access_token_expire_minutes: int = Field(default=120, ge=1)
     ai_provider: str = Field(default="google")
+    gemini_api_key: str = Field(default="")
+    gemini_model: str = Field(default="gemini-2.0-flash")
     rust_engine_url: str = Field(default="http://127.0.0.1:8081")
 
 

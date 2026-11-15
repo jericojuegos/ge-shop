@@ -1,6 +1,36 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from typing import Annotated
+
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator
+
+MAX_INT64 = 9_223_372_036_854_775_807
+
+
+def validate_exact_int_cents(value: object, *, allow_zero: bool = True) -> int:
+    """Reject booleans, floats, strings, and values outside signed 64-bit integer range."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError("Money values must be exact integers in cents (no floats or booleans).")
+    if value > MAX_INT64:
+        raise ValueError(f"Money value in cents cannot exceed int64 max ({MAX_INT64}).")
+    if allow_zero:
+        if value < 0:
+            raise ValueError("Money value in cents cannot be negative.")
+    elif value <= 0:
+        raise ValueError("Money value in cents must be strictly positive.")
+    return value
+
+
+def _validate_positive_cents(value: object) -> int:
+    return validate_exact_int_cents(value, allow_zero=False)
+
+
+def _validate_non_negative_cents(value: object) -> int:
+    return validate_exact_int_cents(value, allow_zero=True)
+
+
+StrictPositiveCents = Annotated[int, BeforeValidator(_validate_positive_cents)]
+StrictNonNegativeCents = Annotated[int, BeforeValidator(_validate_non_negative_cents)]
 
 
 class MoneyCents(BaseModel):
